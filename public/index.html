@@ -3,18 +3,23 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Web Scraper</title>
+    <title>Mercado Livre Scraper</title>
+    <link rel="stylesheet" href="styles.css">
     <script src="index.js" defer></script>
 </head>
 <body>
-    <h1>Scraper Mercado Livre</h1>
+    <div id="hero">
+        <div id="hero-content">
+            <h1>Monitore os preços no <span>Mercado Livre</span></h1>
+            <p>Pare de pagar caro demais. Busque um produto, defina seu preço-alvo e nós o notificaremos assim que o preço baixar.</p>
+            <form method="POST">
+                <input type="text" name="query" placeholder="URL ou termo de busca" required>
+                <button type="submit">Buscar</button>
+            </form>
+        </div>
 
-    <form method="POST">
-        <input type="text" name="query" placeholder="URL ou termo de busca" required>
-        <button type="submit">Buscar</button>
-    </form>
-
-    <hr>
+        <img src="./images/hero-image.png" alt="Imagem do Mercado Livre">
+    </div>
 
     <pre id="resultado"></pre>
     <div>
