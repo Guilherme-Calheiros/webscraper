@@ -73,3 +73,10 @@ form button {
     border-radius: 0 5px 5px 0;
     cursor: pointer;
 }
+
+#cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 20px;
+    padding: 20px;
+}
