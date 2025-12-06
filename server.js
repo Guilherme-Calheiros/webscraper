@@ -87,15 +87,18 @@ async function scrapeProducts(url) {
                     const rating = values.find(v => v.key === "label");
                     const sold = values.find(v => v.key === "label2");
 
-                    card.rating = rating?.label?.text ?? null;
+                    card.rating = rating?.label?.text ?? 'Sem avaliação';
                     card.rating_text = sold?.label?.text ?? null;
                 }
 
                 if (component?.type === "price") {
                     const p = component.price;
-                    card.current_price = p.current_price?.value ?? null;
-                    card.previous_price = p.previous_price?.value ?? null;
-                    card.discount = p.discount_label?.text ?? null;
+                    card.current_price = p.current_price.value ? formatarPreco(p.current_price.value) : null;
+                    card.previous_price = p.previous_price?.value ? formatarPreco(p.previous_price.value) : null;
+
+                    const label = p.discount_label?.text ?? null;
+                    const match = label?.match(/\b\d+% OFF\b/i);
+                    card.discount = match ? match[0] : null;
                 }
             });
 
@@ -116,6 +119,9 @@ function gerarImagemUrl(pictures) {
     }));
 }
 
+function formatarPreco(preco) {
+    return preco.toFixed(2).replace(".", ",");
+}
 
 app.post("/scrape", async (req, res) => {
     const query = req.body.query;

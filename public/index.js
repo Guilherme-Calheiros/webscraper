@@ -10,13 +10,22 @@ atualizarBotoes();
 
 function gerarCards(posts) {
     return posts.map(post => {
+
+        const previous_price = post.previous_price ? `<p class="previous-price">R$ ${post.previous_price}</p>` : "";
+        const discount = post.discount ? `<p class="discount">${post.discount}</p>` : "";
+
+
         return `<div class="card">
-            ${post.images.map(image => `<img src="${image.url}" alt="Image ${image.id}">`).join("")}
-            <h3><a href="${post.url}" target="_blank">${post.title}</a></h3>
-            <p>Avaliação: ${post.rating} (${post.rating_text})</p>
-            <p>Preço Atual: R$ ${post.current_price}</p>
-            <p>Preço Anterior: R$ ${post.previous_price}</p>
-            <p>Desconto: ${post.discount}</p>
+            <div class="img-container">${post.images.map(image => `<img src="${image.url}" alt="Image ${image.id}">`).join("")}</div>
+            <div class="content">
+                <h3 class="title"><a href="${post.url}" target="_blank">${post.title}</a></h3>
+                ${discount}
+                <div class="item-details">
+                    ${previous_price}
+                    <p class="current-price">R$ ${post.current_price}</p>
+                    <p class="rating">${post.rating} ${post.rating_text}</p>
+                </div>
+            </div>
         </div>`;        
     })
 }
