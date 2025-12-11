@@ -1,8 +1,12 @@
 const axios = require("axios");
 const cheerio = require("cheerio");
 const express = require("express");
+const cors = require("cors");
 
 const app = express();
+app.use(cors({
+    origin: 'http://localhost:3000',
+}));
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 app.use(express.static("public"));
@@ -56,7 +60,14 @@ async function scrapeProduct(url) {
 
 async function scrapeProducts(url) {
     const data = await fetchPage(url);
-    if (!data) return posts;
+    if (!data) {
+        return {
+            posts: [],
+            next_page: null,
+            prev_page: null,
+        };
+    }
+    
 
     let results = data.pageState.initialState?.results ?? [];
 
@@ -108,8 +119,8 @@ async function scrapeProducts(url) {
 
     return {
         posts,
-        next_page: data.pageState.initialState?.pagination?.next_page?.url ?? null,
-        prev_page: data.pageState.initialState?.pagination?.previous_page?.url ?? null,
+        results_count: data.pageState.initialState.analytics_track?.dimensions?.searchResults ?? null,
+        last_page: data.pageState.initialState.pagination.page_count ?? null,
     };
 }
 
@@ -125,7 +136,8 @@ function formatarPreco(preco) {
 }
 
 app.post("/scrape", async (req, res) => {
-    const query = req.body.query;
+    const { query, page = 1 } = req.body;
+    const offset = (page - 1) * 50;
 
     try {
         let url;
@@ -135,7 +147,12 @@ app.post("/scrape", async (req, res) => {
             url = query;
             pageData = await scrapeProduct(url);
         } else {
-            url = `https://lista.mercadolivre.com.br/${encodeURIComponent(query)}`;
+            url = `https://lista.mercadolivre.com.br/${decodeURIComponent(query)}`;
+
+            if(offset > 0) {
+                url += `_Desde_${offset + 1}_NoIndex_True`;
+            }
+
             pageData = await scrapeProducts(url);
         }
 
@@ -144,18 +161,6 @@ app.post("/scrape", async (req, res) => {
     } catch (err) {
         console.log(err);
         res.status(500).json({ error: "Erro ao processar scrape" });
-    }
-});
-
-app.post("/scrape-page", async (req, res) => {
-    const pageUrl = req.body.query;
-
-    try {
-        const pageData = await scrapeProducts(pageUrl);
-        res.json(pageData);
-    } catch (err) {
-        console.log(err);
-        res.status(500).json({ error: "Erro ao processar scrape da página" });
     }
 });
 
