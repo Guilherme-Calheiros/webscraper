@@ -20,7 +20,7 @@ export default function Busca() {
     async function carregarPagina(pagina = 1) {
         setLoading(true);
         setPosts([]);
-        const url =  `http://localhost:3001/scrape`;
+        const url =  `/api/scrape`;
 
         const response = await fetch(url, {
             method: "POST",
@@ -29,7 +29,6 @@ export default function Busca() {
         });
 
         const data = await response.json();
-        console.log(data);
 
         setPosts(data.posts);
         setLastPage(data.last_page ?? null);
