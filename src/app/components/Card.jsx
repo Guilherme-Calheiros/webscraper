@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { extrairMLB } from '@/app/utils/regex';
 import { useRouter } from "next/navigation";
+import { formatarMoeda } from "../utils/preco";
 
 export default function Card({ post }) {
     const [index, setIndex] = useState(0);
@@ -43,9 +44,9 @@ export default function Card({ post }) {
 
                 <div className="item-details">
                     {post.previous_price && (
-                        <p className="previous-price line-through text-gray-500">R$ {post.previous_price}</p>
+                        <p className="previous-price line-through text-gray-500">{formatarMoeda(post.previous_price)}</p>
                     )}
-                    <p className="current-price font-bold text-lg">R$ {post.current_price}</p>
+                    <p className="current-price font-bold text-lg">{formatarMoeda(post.current_price)}</p>
                     <p className="rating text-gray-500 text-sm before:content-['★'] before:text-yellow-400 before:mr-1">{post.rating} {post.rating_text}</p>
                 </div>
 

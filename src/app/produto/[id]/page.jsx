@@ -5,6 +5,9 @@ import { useParams, useRouter, useSearchParams } from 'next/navigation';
 import { Header } from '@/app/components/Header';
 import { DotsLoading } from '@/app/components/LoadingIndicator';
 import { extrairMLB } from '@/app/utils/regex';
+import { NumericFormat } from 'react-number-format';
+import { formatarMoeda } from '@/app/utils/preco';
+import { useAuth } from '@/app/providers/AuthProvider';
 
 export default function Produto() {
     const { id } = useParams();
@@ -23,10 +26,13 @@ export default function Produto() {
         images: []
     };
 
+    const { user } = useAuth();
+
     const [loading, setLoading] = useState(false);
     const [novaBusca, setNovaBusca] = useState(decodeURIComponent(url || ''));
     const [produto, setProduto] = useState(produtoInicial);
     const [index, setIndex] = useState(0);  
+    const [targetPrice, setTargetPrice] = useState(null);
 
     function handleSubmit(e) {
         e.preventDefault();
@@ -51,6 +57,7 @@ export default function Produto() {
         
         const data = await response.json();
         setProduto(data.posts[0]);
+        setTargetPrice(data.posts[0].current_price);
         setLoading(false);
     }
 
@@ -58,8 +65,39 @@ export default function Produto() {
         if (!id) return;
         setNovaBusca(decodeURIComponent(url || ''));
         setProduto(produtoInicial);
+        setTargetPrice(null);
         carregarProduto();
     }, [id, url]);
+
+    function modalCriarAlerta() {
+        const modal = document.getElementById('modal-criar-alerta');
+        modal.classList.toggle('hidden');
+    }
+
+    async function criarAlerta(produto) {
+        const payload = {
+            productId: produto.id,
+            productName: produto.title,
+            productUrl: produto.url,
+            currentPrice: produto.current_price,
+            targetPrice: targetPrice,
+        }
+        
+        const response = await fetch('/api/protected/alerts', {
+            method: 'POST',
+            credentials: 'include',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+        });
+
+        if (response.ok) {
+            alert('Alerta criado com sucesso!');
+            modalCriarAlerta();
+        } else {
+            const data = await response.json();
+            alert(`Erro ao criar alerta: ${data.error}`);
+        }
+    }
 
     return (
         <div>
@@ -73,41 +111,73 @@ export default function Produto() {
                     <DotsLoading />
                 </div>
             ) : (
-                <div className='flex flex-col items-center mt-4'>
-                    <div className="produto-container bg-white md:w-5xl justify-center flex p-6">
-                        <div className="img-container w-full p-2 mb-3 flex items-center justify-center relative overflow-hidden">
-                            {produto.images.map((img, i) => (
-                                <img
-                                    key={img.id}
-                                    src={img.url}
-                                    className={i === index ? 'block max-w-full max-h-full object-contain' : 'hidden'}
-                                />
-                            ))}
-                            {produto.images.length > 1 && (
-                            <>
-                                <button className="prev absolute top-1/2 left-1 transform -translate-y-1/2 bg-black bg-opacity-60 text-white border-none cursor-pointer p-1.5" onClick={() => setIndex((index - 1 + produto.images.length) % produto.images.length)}>‹</button>
-                                <button className="next absolute top-1/2 right-1 transform -translate-y-1/2 bg-black bg-opacity-60 text-white border-none cursor-pointer p-1.5" onClick={() => setIndex((index + 1) % produto.images.length)}>›</button>
-                            </>
-                            )}
-                        </div>
-                        <div className="content p-4 flex flex-col gap-2">
-                            <h3 className="text-base font-semibold">
-                                {produto.title}
-                            </h3>
-                            {produto.discount && <p className="discount absolute top-2 right-2 bg-green-600 text-white text-sm px-2 py-1 rounded">{produto.discount}</p>}
-                            <div className="item-details">
-                                {produto.previous_price && (
-                                    <p className="previous-price line-through text-gray-500">R$ {produto.previous_price}</p>
+                <>
+                    <div className='flex flex-col items-center mt-4'>
+                        <div className="produto-container bg-white md:w-5xl justify-center flex p-6 relative">
+                            <div className="img-container w-full p-2 mb-3 flex items-center justify-center relative overflow-hidden">
+                                {produto.images.map((img, i) => (
+                                    <img
+                                        key={img.id}
+                                        src={img.url}
+                                        className={i === index ? 'block max-w-full max-h-full object-contain' : 'hidden'}
+                                    />
+                                ))}
+                                {produto.images.length > 1 && (
+                                <>
+                                    <button className="prev absolute top-1/2 left-1 transform -translate-y-1/2 bg-black bg-opacity-60 text-white border-none cursor-pointer p-1.5" onClick={() => setIndex((index - 1 + produto.images.length) % produto.images.length)}>‹</button>
+                                    <button className="next absolute top-1/2 right-1 transform -translate-y-1/2 bg-black bg-opacity-60 text-white border-none cursor-pointer p-1.5" onClick={() => setIndex((index + 1) % produto.images.length)}>›</button>
+                                </>
                                 )}
-                                <p className="current-price font-bold text-lg">R$ {produto.current_price}</p>
-                                <p className="rating text-gray-500 text-sm before:content-['★'] before:text-yellow-400 before:mr-1">{produto.rating} {produto.rating_text}</p>
                             </div>
-                            <div className="actions flex justify-between items-center">
-                                <a href={produto.url} target="_blank" className="bg-[var(--primary)] text-[var(--secondary)] px-4 py-2 rounded hover:bg-yellow-400 focus:outline-none focus:ring-2 focus:ring-yellow-300">Mercado Livre</a>
+                            <div className="content p-4 flex flex-col gap-2">
+                                <h3 className="text-base font-semibold">
+                                    {produto.title}
+                                </h3>
+                                {produto.discount && <p className="discount absolute top-2 right-2 bg-green-600 text-white text-sm px-2 py-1 rounded">{produto.discount}</p>}
+                                <div className="item-details">
+                                    {produto.previous_price && (
+                                        <p className="previous-price line-through text-gray-500">{formatarMoeda(produto.previous_price)}</p>
+                                    )}
+                                    <p className="current-price font-bold text-lg">{formatarMoeda(produto.current_price)}</p>
+                                    <p className="rating text-gray-500 text-sm before:content-['★'] before:text-yellow-400 before:mr-1">{produto.rating} {produto.rating_text}</p>
+                                </div>
+                                <div className="actions flex justify-between items-center">
+                                    <a href={produto.url} target="_blank" className="bg-[var(--primary)] text-[var(--secondary)] px-4 py-2 rounded hover:bg-yellow-400 focus:outline-none focus:ring-2 focus:ring-yellow-300">Mercado Livre</a>
+                                    {user ? (
+                                        <button onClick={modalCriarAlerta} className="bg-gray-200 text-gray-800 px-4 py-2 rounded hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-400">Me avise</button>
+                                    ) : (
+                                        <a href="/login" className="bg-gray-200 text-gray-800 px-4 py-2 rounded hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-400">Faça login</a>
+                                    )}
+                                </div>
                             </div>
                         </div>
                     </div>
-                </div>
+
+                    <div id='modal-criar-alerta' className='hidden fixed inset-0 bg-black/25 flex items-center justify-center z-50'>
+                        <div className='bg-white rounded-lg p-6 w-11/12 max-w-md'>
+                            <h2 className='text-xl font-semibold mb-4'>Criar Alerta de Preço</h2>
+                            <p className='mb-4'>Escolha um preço para te avisarmos sobre <strong>{produto.title}</strong></p>
+                            <NumericFormat
+                                value={targetPrice}
+                                onValueChange={(values) => setTargetPrice(values.floatValue)}
+                                className='w-full border border-gray-300 rounded px-3 py-2 mb-4 focus:outline-none focus:ring-2 focus:ring-yellow-300'
+                                placeholder='Preço alvo em R$'
+                                allowLeadingZeros={false}
+                                allowNegative={false}
+                                decimalScale={2}
+                                fixedDecimalScale={true}
+                                decimalSeparator=','
+                                allowedDecimalSeparators={['.']}
+                                prefix='R$ '
+                                thousandSeparator='.'
+                            />
+                            <div className='flex justify-end'>
+                                <button onClick={modalCriarAlerta} className='bg-gray-200 text-gray-800 px-4 py-2 rounded hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-400 mr-2'>Cancelar</button>
+                                <button onClick={() => criarAlerta(produto)} className='bg-[var(--primary)] text-[var(--secondary)] px-4 py-2 rounded hover:bg-yellow-400 focus:outline-none focus:ring-2 focus:ring-yellow-300'>Criar Alerta</button>
+                            </div>
+                        </div>
+                    </div>
+                </>
             )}
         </div>
     );

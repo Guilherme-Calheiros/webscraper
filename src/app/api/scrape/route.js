@@ -2,7 +2,7 @@ import axios from "axios";
 import * as cheerio from "cheerio";
 import { NextResponse } from "next/server";
 
-async function fetchPage(url) {
+async function fetchPageProduct(url) {
     const response = await axios.get(url, {
         responseType: "text",
         headers: {
@@ -27,8 +27,39 @@ async function fetchPage(url) {
     return JSON.parse(jsonRaw);
 }
 
+async function fetchPageProducts(url) {
+    const response = await axios.get(url, {
+        responseType: "text",
+        headers: {
+            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36",
+            "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8",
+            "Accept-Language": "pt-BR,pt;q=0.9",
+            "Accept-Encoding": "gzip, deflate, br",
+            "Connection": "keep-alive",
+        }
+    });
+
+    const html = response.data;
+    
+    const match = html.match(/_n\.ctx\.r\s*=\s*({[\s\S]*?})\s*;/);
+
+    if (!match) {
+        console.log("Nordic rendering ctx não encontrado");
+        return null;
+    }
+
+    const jsonString = match[1];
+
+    try {
+        return JSON.parse(jsonString);
+    } catch (err) {
+        console.error("Erro ao fazer parse do Nordic ctx:", err);
+        return null;
+    }
+}
+
 async function scrapeProduct(url, mlb) {
-    const data = await fetchPage(url);
+    const data = await fetchPageProduct(url);
     if (!data) return null;
     
     const result = {
@@ -49,10 +80,10 @@ async function scrapeProduct(url, mlb) {
 }
 
 async function scrapeProducts(url) {
-    const data = await fetchPage(url);
+    const data = await fetchPageProducts(url);
     if (!data) return { posts: [] };
 
-    let results = data.pageState.initialState?.results ?? [];
+    let results = data.appProps?.pageProps?.initialState?.results ?? [];
     let regex = /(https?:\/\/)?click1\.mercadolivre\.com\.br/;
     
     const posts = results
@@ -101,8 +132,8 @@ async function scrapeProducts(url) {
 
     return {
         posts,
-        results_count: data.pageState.initialState.analytics_track?.dimensions?.searchResults ?? null,
-        last_page: data.pageState.initialState.pagination.page_count ?? null,
+        results_count: data.appProps.pageProps.initialState.analytics_track?.dimensions?.searchResults ?? null,
+        last_page: data.appProps.pageProps.initialState.pagination.page_count ?? null,
     };
 }
 
@@ -114,7 +145,7 @@ function gerarImagemUrl(pictures) {
 }
 
 function formatarPreco(preco) {
-    return preco.toFixed(2).replace(".", ",");
+    return Number(preco.toFixed(2));
 }
 
 export async function POST(request) {
