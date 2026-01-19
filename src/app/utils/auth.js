@@ -23,7 +23,6 @@ export const auth = betterAuth({
         enabled: true, 
     },
 
-    trustedOrigins: [
-        process.env.BETTER_TRUSTED_ORIGINS?.split(",") || []
-    ]
+    trustedOrigins: process.env.BETTER_TRUSTED_ORIGINS?.split(",") || []
+    
 });
