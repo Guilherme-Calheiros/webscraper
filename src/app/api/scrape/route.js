@@ -5,13 +5,6 @@ import { NextResponse } from "next/server";
 async function fetchPageProduct(url) {
     const response = await axios.get(url, {
         responseType: "text",
-        headers: {
-            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36",
-            "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8",
-            "Accept-Language": "pt-BR,pt;q=0.9",
-            "Accept-Encoding": "gzip, deflate, br",
-            "Connection": "keep-alive",
-        }
     });
 
     const html = response.data;
@@ -24,19 +17,17 @@ async function fetchPageProduct(url) {
         return null;
     }
 
-    return JSON.parse(jsonRaw);
+    try {
+        return JSON.parse(jsonRaw);
+    } catch (err) {
+        console.error("Erro ao parsear JSON de '__PRELOADED_STATE__':", err);
+        return null;
+    }
 }
 
 async function fetchPageProducts(url) {
     const response = await axios.get(url, {
         responseType: "text",
-        headers: {
-            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36",
-            "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8",
-            "Accept-Language": "pt-BR,pt;q=0.9",
-            "Accept-Encoding": "gzip, deflate, br",
-            "Connection": "keep-alive",
-        }
     });
 
     const html = response.data;
@@ -83,7 +74,7 @@ async function scrapeProducts(url) {
     const data = await fetchPageProducts(url);
     if (!data) return { posts: [] };
 
-    let results = data.appProps?.pageProps?.initialState?.results ?? [];
+    let results = data?.appProps?.pageProps?.initialState?.results ?? [];
     let regex = /(https?:\/\/)?click1\.mercadolivre\.com\.br/;
     
     const posts = results
@@ -162,13 +153,14 @@ export async function POST(request) {
         else if (query) {
             const offset = (page - 1) * 50;
 
-            let url = `https://lista.mercadolivre.com.br/${decodeURIComponent(query)}`;
+            let urlObj = new URL(decodeURIComponent(query), 'https://lista.mercadolivre.com.br/');
+            let urlStr = urlObj.href;
 
             if (offset > 0) {
-                url += `_Desde_${offset + 1}_NoIndex_True`;
+                urlStr += `_Desde_${offset + 1}_NoIndex_True`;
             }
 
-            pageData = await scrapeProducts(url);
+            pageData = await scrapeProducts(urlStr);
         }
 
         else {
