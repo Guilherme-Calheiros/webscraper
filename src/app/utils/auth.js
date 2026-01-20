@@ -23,6 +23,10 @@ export const auth = betterAuth({
         enabled: true, 
     },
 
-    trustedOrigins: process.env.BETTER_TRUSTED_ORIGINS
+    trustedOrigins: [
+        'https://melitrack.vercel.app/',
+        '*vercel.app',
+        'http://localhost:3000'
+    ],
     
 });
