@@ -51,6 +51,7 @@ async function fetchPageProducts(url) {
 
 async function scrapeProduct(url, mlb) {
     const data = await fetchPageProduct(url);
+    console.log(data);
     if (!data) return null;
     
     const result = {
@@ -74,6 +75,7 @@ async function scrapeProducts(url) {
     const data = await fetchPageProducts(url);
     if (!data) return { posts: [] };
 
+    console.log(data);
     let results = data?.appProps?.pageProps?.initialState?.results ?? [];
     let regex = /(https?:\/\/)?click1\.mercadolivre\.com\.br/;
     
