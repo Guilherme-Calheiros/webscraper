@@ -33,6 +33,18 @@ export default function Busca() {
 
         const data = await response.json();
 
+        if(data.error){
+            alert(`Erro ao buscar o produto: ${data.error}`);
+            setLoading(false);
+            return;
+        }
+
+        if (data.blocked) {
+            alert('Mercado Livre bloqueou a busca por este produto.');
+            setLoading(false);
+            return;
+        }
+
         setPosts(data.posts);
         setLastPage(data.last_page ?? null);
         setResults(data.results_count ?? null);

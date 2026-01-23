@@ -56,6 +56,19 @@ export default function Produto() {
         });
         
         const data = await response.json();
+
+        if(data.error){
+            alert(`Erro ao buscar o produto: ${data.error}`);
+            setLoading(false);
+            return;
+        }
+
+        if (data.blocked) {
+            alert('Mercado Livre bloqueou a busca por este produto.');
+            setLoading(false);
+            return;
+        }
+
         setProduto(data.posts[0]);
         setTargetPrice(data.posts[0].current_price);
         setLoading(false);

@@ -233,7 +233,7 @@ export async function POST(request) {
                 blocked: true,
                 error: "Falha ao buscar dados",
             },
-            { status: 200 }
+            { status: 500 }
         );
     }
 }
