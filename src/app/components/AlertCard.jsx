@@ -8,6 +8,7 @@ import { Button } from "./ui/button";
 import { useRouter } from "next/navigation";
 import { Bell, Edit2, Trash2, TrendingDown, TrendingUp } from "lucide-react";
 import { formatarMoeda } from "../utils/preco";
+import { toast } from "sonner";
 
 export default function AlertCard({ alerta }) {
     const [targetPrice, setTargetPrice] = useState(alerta.targetPrice);
@@ -33,11 +34,11 @@ export default function AlertCard({ alerta }) {
         });
 
         if (response.ok) {
-            alert('Alerta atualizado com sucesso!');
+            toast('Alerta atualizado com sucesso!');
             setOpenEditDialog(false);
             router.refresh();
         } else {
-            alert('Erro ao atualizar o alerta.');
+            toast.error('Erro ao atualizar o alerta.');
         }
     }
 
@@ -54,11 +55,11 @@ export default function AlertCard({ alerta }) {
         });
 
         if (response.ok) {
-            alert('Alerta excluído com sucesso!');
+            toast('Alerta excluído com sucesso!');
             setOpenDeleteDialog(false);
             router.refresh();
         } else {
-            alert('Erro ao excluir o alerta.');
+            toast.error('Erro ao excluir o alerta.');
         }
     }
 

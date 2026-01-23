@@ -4,10 +4,10 @@ import { useEffect, useState } from 'react';
 import { useParams, useRouter, useSearchParams } from 'next/navigation';
 import { Header } from '@/app/components/Header';
 import { DotsLoading } from '@/app/components/LoadingIndicator';
-import { extrairMLB } from '@/app/utils/regex';
 import { NumericFormat } from 'react-number-format';
 import { formatarMoeda } from '@/app/utils/preco';
 import { useAuth } from '@/app/providers/AuthProvider';
+import { toast } from 'sonner';
 
 export default function Produto() {
     const { id } = useParams();
@@ -29,22 +29,9 @@ export default function Produto() {
     const { user } = useAuth();
 
     const [loading, setLoading] = useState(false);
-    const [novaBusca, setNovaBusca] = useState(decodeURIComponent(url || ''));
     const [produto, setProduto] = useState(produtoInicial);
     const [index, setIndex] = useState(0);  
     const [targetPrice, setTargetPrice] = useState(null);
-
-    function handleSubmit(e) {
-        e.preventDefault();
-
-        const MLB = extrairMLB(novaBusca);
-        if (MLB) {
-            router.push(`/produto/${MLB}?url=${encodeURIComponent(novaBusca)}`);
-            return;
-        }
-
-        router.push(`/busca/${encodeURIComponent(novaBusca)}?page=1`);
-    }
 
     async function carregarProduto() {
         setLoading(true);
@@ -58,13 +45,13 @@ export default function Produto() {
         const data = await response.json();
 
         if(data.error){
-            alert(`Erro ao buscar o produto: ${data.error}`);
+            toast.error(`Erro ao buscar o produto: ${data.error}`);
             setLoading(false);
             return;
         }
 
         if (data.blocked) {
-            alert('Mercado Livre bloqueou a busca por este produto.');
+            toast.error('Mercado Livre bloqueou a busca por este produto.');
             setLoading(false);
             return;
         }
@@ -76,7 +63,6 @@ export default function Produto() {
 
     useEffect(() => {
         if (!id) return;
-        setNovaBusca(decodeURIComponent(url || ''));
         setProduto(produtoInicial);
         setTargetPrice(null);
         carregarProduto();
@@ -104,21 +90,17 @@ export default function Produto() {
         });
 
         if (response.ok) {
-            alert('Alerta criado com sucesso!');
+            toast('Alerta criado com sucesso!');
             modalCriarAlerta();
         } else {
             const data = await response.json();
-            alert(`Erro ao criar alerta: ${data.error}`);
+            toast.error(`Erro ao criar alerta: ${data.error}`);
         }
     }
 
     return (
         <div>
-            <Header 
-                searchValue={novaBusca}
-                onSearchChange={(e) => setNovaBusca(e.target.value)}
-                onSearchSubmit={handleSubmit}
-            />
+            <Header />
             {loading ? (
                 <div className='flex justify-center items-centerm mt-4'>
                     <DotsLoading />

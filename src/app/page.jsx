@@ -25,7 +25,7 @@ export default function Home() {
 
     return (
         <>
-            <Header />
+            <Header search={false} />
             <div id="hero" className='bg-[var(--secondary)] text-white py-5 px-20 w-full grid md:grid-cols-2 gap-10 items-center justify-items-center'>
                 <div id="hero-content">
                     <h1 className='text-5xl font-extrabold'>

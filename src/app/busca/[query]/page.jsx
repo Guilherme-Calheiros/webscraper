@@ -5,8 +5,9 @@ import Card from '../../components/Card';
 import { useState } from 'react';
 import { useParams, useRouter, useSearchParams } from 'next/navigation';
 import { DotsLoading } from '@/app/components/LoadingIndicator';
-import { extrairMLB } from '@/app/utils/regex';
 import { Header } from '@/app/components/Header';
+import { Button } from '@/app/components/ui/button';
+import { toast } from 'sonner';
 
 export default function Busca() {
     const { query } = useParams();
@@ -15,7 +16,6 @@ export default function Busca() {
     const page = Number(searchParams.get('page')) || 1;
     
     const [loading, setLoading] = useState(false);
-    const [novaBusca, setNovaBusca] = useState(decodeURIComponent(query));
     const [posts, setPosts] = useState([]);
     const [results, setResults] = useState(null);
     const [lastPage, setLastPage] = useState(null);
@@ -34,13 +34,13 @@ export default function Busca() {
         const data = await response.json();
 
         if(data.error){
-            alert(`Erro ao buscar o produto: ${data.error}`);
+            toast.error(`Erro ao buscar os produtos: ${data.error}`);
             setLoading(false);
             return;
         }
 
         if (data.blocked) {
-            alert('Mercado Livre bloqueou a busca por este produto.');
+            toast.error('Mercado Livre bloqueou a busca por este produto.');
             setLoading(false);
             return;
         }
@@ -51,21 +51,8 @@ export default function Busca() {
         setLoading(false);
     }
 
-    function handleSubmit(e) {
-        e.preventDefault();
-
-        const MLB = extrairMLB(novaBusca);
-        if (MLB) {
-            router.push(`/produto/${MLB}?url=${encodeURIComponent(novaBusca)}`);
-            return;
-        }
-
-        router.push(`/busca/${encodeURIComponent(novaBusca)}?page=1`);
-    };
-
     useEffect(() => {
         if (!query) return;
-        setNovaBusca(decodeURIComponent(query));
         setPosts([]);
         setResults(null);
         carregarPagina(page);
@@ -73,33 +60,37 @@ export default function Busca() {
 
     return (
         <div>
-            <Header 
-                searchValue={novaBusca}
-                onSearchChange={(e) => setNovaBusca(e.target.value)}
-                onSearchSubmit={handleSubmit}
-            />
+            <Header />
 
-            <h2>Resultados para: {decodeURIComponent(query)} ({results ?? 0} resultados)</h2>
+            <div className='p-4'>    
+                <h2>Resultados para: {decodeURIComponent(query)} ({results ?? 0} resultados)</h2>
+                {loading ? (
+                    <div className='flex justify-center items-center min-h-96'>
+                        <DotsLoading />
+                    </div>
+                ) : (
+                    <>
+                        <div id="cards" className="grid [grid-template-columns:repeat(auto-fit,minmax(260px,1fr))] mx-auto gap-6 p-5 max-w-[1280px]">
+                            {posts.map(post => (
+                                <Card key={post.url} post={post} />
+                            ))}
+                        </div>
+                        <div className='flex items-center justify-center gap-4'>
+                            <Button disabled={loading || page <= 1} onClick={() => router.push(`/busca/${encodeURIComponent(query)}?page=${parseInt(page) - 1}`)}>
+                                Anterior
+                            </Button>
 
-            {loading ? (
-                <div className='flex justify-center items-center'>
-                    <DotsLoading />
-                </div>
-            ) : (
-                <div id="cards" className="grid [grid-template-columns:repeat(auto-fit,minmax(260px,1fr))] mx-auto gap-6 p-5 max-w-[1280px]">
-                    {posts.map(post => (
-                        <Card key={post.url} post={post} />
-                    ))}
-                </div>
-            )}
+                            <p>Página {page} de {lastPage}</p>
 
-            <button disabled={loading || page <= 1} onClick={() => router.push(`/busca/${encodeURIComponent(query)}?page=${parseInt(page) - 1}`)}>
-                Anterior
-            </button>
+                            <Button disabled={loading || page >= lastPage} onClick={() => router.push(`/busca/${encodeURIComponent(query)}?page=${parseInt(page) + 1}`)}>
+                                Próxima
+                            </Button>
+                        </div>
+                    </>
+                )}
+            </div>
 
-            <button disabled={loading || page >= lastPage} onClick={() => router.push(`/busca/${encodeURIComponent(query)}?page=${parseInt(page) + 1}`)}>
-                Próxima
-            </button>
+
         </div>
   );
 }

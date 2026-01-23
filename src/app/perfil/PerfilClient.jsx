@@ -20,7 +20,7 @@ export default function PerfilClient({ user }) {
     if (email.length !== 0 && email.toLowerCase() !== user.email.toLowerCase()) {
 
       if (/[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?/gi.test(email) === false) {
-        alert('Por favor, insira um email válido.');
+        toast.error('Por favor, insira um email válido.');
         return;
       }
 
@@ -29,13 +29,13 @@ export default function PerfilClient({ user }) {
       });
 
       if (response.error) {
-          alert('Erro ao atualizar o email: ' + response.error.message);
+          toast.error('Erro ao atualizar o email: ' + response.error.message);
           return;
       }
 
       router.refresh();
       await refreshUser();
-      alert('Email atualizado com sucesso!');
+      toast('Email atualizado com sucesso!');
     }
 
     if (name.length !== 0 && name !== user.name) {
@@ -44,28 +44,28 @@ export default function PerfilClient({ user }) {
       });
 
       if (response.error) {
-          alert('Erro ao atualizar o nome: ' + response.error.message);
+          toast.error('Erro ao atualizar o nome: ' + response.error.message);
           return;
       }
 
       router.refresh();
       await refreshUser();
-      alert('Nome atualizado com sucesso!');
+      toast('Nome atualizado com sucesso!');
     }
 
     if (newPassword.length !== 0) {
       if (newPassword.length < 8) {
-        alert('A senha deve ter pelo menos 8 caracteres.');
+        toast.error('A senha deve ter pelo menos 8 caracteres.');
         return;
       }
 
       if (oldPassword.length === 0) {
-        alert('Por favor, insira sua senha atual para alterar a senha.');
+        toast.error('Por favor, insira sua senha atual para alterar a senha.');
         return;
       }
 
       if (oldPassword === newPassword) {
-        alert('A nova senha deve ser diferente da senha atual.');
+        toast.error('A nova senha deve ser diferente da senha atual.');
         return;
       }
 
@@ -78,10 +78,10 @@ export default function PerfilClient({ user }) {
           onSuccess: async (ctx) => {
               router.refresh();
               await refreshUser();
-              alert('Senha atualizada com sucesso!');
+              toast('Senha atualizada com sucesso!');
           },
           onError: (ctx) => {
-              alert(ctx.error.message || 'Erro ao atualizar a senha');
+              toast.error(ctx.error.message || 'Erro ao atualizar a senha');
           },
       });
 
