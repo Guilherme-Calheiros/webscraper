@@ -3,6 +3,7 @@
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { authClient } from '@/app/utils/auth-client';
+import { Header } from '../components/Header';
 
 export default function LoginPage() {
     const router = useRouter();
@@ -39,9 +40,10 @@ export default function LoginPage() {
 
     return (
         <>
+            <Header />
             <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100">
                 <div className="w-full max-w-md p-8 space-y-6 bg-white rounded shadow">
-                    <h2 className="text-2xl font-bold text-center">Login</h2>
+                    <h2 className="text-2xl font-bold text-center">Registre-se</h2>
                     {error && <div className="p-4 text-red-700 bg-red-100 border border-red-400 rounded">{error}</div>}
                     <form onSubmit={handleSubmit} className="space-y-6">
                         <div>

@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { authClient } from '@/app/utils/auth-client';
 import { useAuth } from '../providers/AuthProvider';
+import { Header } from '../components/Header';
 
 export default function LoginPage() {
     const router = useRouter();
@@ -34,6 +35,7 @@ export default function LoginPage() {
 
     return (
         <>
+            <Header />
             <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100">
                 <div className="w-full max-w-md p-8 space-y-6 bg-white rounded shadow">
                     <h2 className="text-2xl font-bold text-center">Login</h2>

@@ -1,4 +1,4 @@
-import { pgTable, serial, text, integer, timestamp} from "drizzle-orm/pg-core";
+import { pgTable, serial, text, integer, timestamp, numeric} from "drizzle-orm/pg-core";
 import { user } from "./auth-schema.js";
 
 export const productAlert = pgTable("product_alerts", {
@@ -8,8 +8,8 @@ export const productAlert = pgTable("product_alerts", {
   productName: text("product_name").notNull(),
   productUrl: text("product_url").notNull(),
 
-  currentPrice: integer("current_price").notNull(),
-  targetPrice: integer("target_price").notNull(),
+  currentPrice: numeric("current_price", { precision: 10, scale: 2 }).notNull(),
+  targetPrice: numeric("target_price", { precision: 10, scale: 2 }).notNull(),
   
   userId: text("user_id")
     .notNull()
@@ -28,7 +28,7 @@ export const historyPrice = pgTable("history_prices", {
     .notNull()
     .references(() => productAlert.id, { onDelete: "cascade" }),
 
-  price: integer("price").notNull(),
+  price: numeric("price", { precision: 10, scale: 2 }).notNull(),
 
   recordedAt: timestamp("recorded_at").defaultNow().notNull(),
 });
