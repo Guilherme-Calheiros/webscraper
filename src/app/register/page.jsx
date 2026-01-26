@@ -4,6 +4,9 @@ import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { authClient } from '@/app/utils/auth-client';
 import { Header } from '../components/Header';
+import { toast } from 'sonner';
+import { registerSchema } from '@/schema/register.schema';
+import PasswordInput from '../components/PasswordInput';
 
 export default function LoginPage() {
     const router = useRouter();
@@ -11,14 +14,21 @@ export default function LoginPage() {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [confirmPassword, setConfirmPassword] = useState('');
-    const [error, setError] = useState(null);
 
     async function handleSubmit(e) {
         e.preventDefault();
-        setError(null);
 
-        if (password !== confirmPassword) {
-            setError('As senhas não coincidem');
+        const result = registerSchema.safeParse({
+            name,
+            email,
+            password,
+            confirmPassword,
+        });
+
+        if (!result.success) {
+            result.error.issues.forEach(issue => {
+                toast.error(issue.message);
+            });
             return;
         }
 
@@ -27,13 +37,12 @@ export default function LoginPage() {
             email,
             password,
         }, {
-            onRequest: (ctx) => {},
             onSuccess: (ctx) => {
-                console.log('Registro bem-sucedido:', ctx);
+                toast('Registro bem-sucedido!');
                 router.back();
             },
             onError: (ctx) => {
-                setError(ctx.error.message || 'Erro ao registrar');
+                toast.error(ctx.error.message || 'Erro ao registrar');
             },
         });
     }
@@ -44,16 +53,14 @@ export default function LoginPage() {
             <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100">
                 <div className="w-full max-w-md p-8 space-y-6 bg-white rounded shadow">
                     <h2 className="text-2xl font-bold text-center">Registre-se</h2>
-                    {error && <div className="p-4 text-red-700 bg-red-100 border border-red-400 rounded">{error}</div>}
                     <form onSubmit={handleSubmit} className="space-y-6">
                         <div>
                             <label htmlFor="name" className="block mb-2 text-sm font-medium text-gray-700">Nome</label>
                             <input
-                                type="name"
+                                type="text"
                                 id="name"
                                 value={name}
                                 onChange={(e) => setName(e.target.value)}
-                                required
                                 className="w-full px-3 py-2 border rounded focus:outline-none focus:ring focus:border-blue-300"
                             />
                         </div>
@@ -64,30 +71,21 @@ export default function LoginPage() {
                                 id="email"
                                 value={email}
                                 onChange={(e) => setEmail(e.target.value)}
-                                required
                                 className="w-full px-3 py-2 border rounded focus:outline-none focus:ring focus:border-blue-300"
                             />
                         </div>
                         <div>
                             <label htmlFor="password" className="block mb-2 text-sm font-medium text-gray-700">Senha</label>
-                            <input
-                                type="password"
-                                id="password"
+                            <PasswordInput
                                 value={password}
                                 onChange={(e) => setPassword(e.target.value)}
-                                required
-                                className="w-full px-3 py-2 border rounded focus:outline-none focus:ring focus:border-blue-300"
                             />
                         </div>
                         <div>
                             <label htmlFor="confirm-password" className="block mb-2 text-sm font-medium text-gray-700">Confirmar Senha</label>
-                            <input
-                                type="password"
-                                id="confirm-password"
+                            <PasswordInput
                                 value={confirmPassword}
                                 onChange={(e) => setConfirmPassword(e.target.value)}
-                                required
-                                className="w-full px-3 py-2 border rounded focus:outline-none focus:ring focus:border-blue-300"
                             />
                         </div>
                         <div className='flex items-center justify-center'>

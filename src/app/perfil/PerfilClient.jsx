@@ -5,6 +5,9 @@ import { Header } from "../components/Header";
 import { authClient } from "../utils/auth-client";
 import { useAuth } from "../providers/AuthProvider";
 import { useRouter } from "next/navigation";
+import { perfilSchema } from "@/schema/perfil.schema";
+import { toast } from "sonner";
+import PasswordInput from "../components/PasswordInput";
 
 export default function PerfilClient({ user }) {
   const [name, setName] = useState(user.name);
@@ -17,20 +20,26 @@ export default function PerfilClient({ user }) {
   async function handleSubmit(e) {
     e.preventDefault();
 
-    if (email.length !== 0 && email.toLowerCase() !== user.email.toLowerCase()) {
+    const result = perfilSchema.safeParse({
+      name,
+      email,
+      oldPassword,
+      newPassword,
+    });
 
-      if (/[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?/gi.test(email) === false) {
-        toast.error('Por favor, insira um email válido.');
-        return;
-      }
-
-      const response = await authClient.changeEmail({
-          newEmail: email,
+    if (!result.success) {
+      result.error.issues.forEach(issue => {
+        toast.error(issue.message);
       });
+      return;
+    }
+
+    if (email && email.toLowerCase() !== user.email.toLowerCase()) {
+      const response = await authClient.changeEmail({ newEmail: email });
 
       if (response.error) {
-          toast.error('Erro ao atualizar o email: ' + response.error.message);
-          return;
+        toast.error('Erro ao atualizar o email: ' + response.error.message);
+        return;
       }
 
       router.refresh();
@@ -38,14 +47,12 @@ export default function PerfilClient({ user }) {
       toast('Email atualizado com sucesso!');
     }
 
-    if (name.length !== 0 && name !== user.name) {
-      const response = await authClient.updateUser({
-          name: name,
-      });
+    if (name && name !== user.name) {
+      const response = await authClient.updateUser({ name });
 
       if (response.error) {
-          toast.error('Erro ao atualizar o nome: ' + response.error.message);
-          return;
+        toast.error('Erro ao atualizar o nome: ' + response.error.message);
+        return;
       }
 
       router.refresh();
@@ -53,40 +60,25 @@ export default function PerfilClient({ user }) {
       toast('Nome atualizado com sucesso!');
     }
 
-    if (newPassword.length !== 0) {
-      if (newPassword.length < 8) {
-        toast.error('A senha deve ter pelo menos 8 caracteres.');
-        return;
-      }
-
-      if (oldPassword.length === 0) {
-        toast.error('Por favor, insira sua senha atual para alterar a senha.');
-        return;
-      }
-
-      if (oldPassword === newPassword) {
-        toast.error('A nova senha deve ser diferente da senha atual.');
-        return;
-      }
-
-      const { data, error } = await authClient.changePassword({
-          newPassword: newPassword,
+    if (newPassword) {
+      await authClient.changePassword(
+        {
+          newPassword,
           currentPassword: oldPassword,
           revokeOtherSessions: true,
-      }, {
-          onRequest: (ctx) => {},
-          onSuccess: async (ctx) => {
-              router.refresh();
-              await refreshUser();
-              toast('Senha atualizada com sucesso!');
+        },
+        {
+          onSuccess: async () => {
+            router.refresh();
+            await refreshUser();
+            toast('Senha atualizada com sucesso!');
           },
           onError: (ctx) => {
-              toast.error(ctx.error.message || 'Erro ao atualizar a senha');
+            toast.error(ctx.error.message || 'Erro ao atualizar a senha');
           },
-      });
-
+        }
+      );
     }
-
   }
 
   return (
@@ -116,21 +108,17 @@ export default function PerfilClient({ user }) {
 
           <div>
             <label className="block text-sm font-medium">Senha Atual</label>
-            <input
-              type="password"
-              className="w-full border rounded px-3 py-2"
-              placeholder="Digite sua senha atual"
-              onChange={(e) => setOldPassword(e.target.value)}
+            <PasswordInput
+                value={oldPassword}
+                onChange={(e) => setOldPassword(e.target.value)}
             />
           </div>
 
           <div>
             <label className="block text-sm font-medium">Senha</label>
-            <input
-              type="password"
-              className="w-full border rounded px-3 py-2"
-              placeholder="Digite uma nova senha"
-              onChange={(e) => setNewPassword(e.target.value)}
+            <PasswordInput
+                value={newPassword}
+                onChange={(e) => setNewPassword(e.target.value)}
             />
           </div>
 

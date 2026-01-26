@@ -5,17 +5,27 @@ import { useRouter } from 'next/navigation';
 import { authClient } from '@/app/utils/auth-client';
 import { useAuth } from '../providers/AuthProvider';
 import { Header } from '../components/Header';
+import { loginSchema } from '@/schema/login.schema';
+import { toast } from 'sonner';
+import PasswordInput from '../components/PasswordInput';
 
 export default function LoginPage() {
     const router = useRouter();
     const { refreshUser } = useAuth();
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
-    const [error, setError] = useState(null);
 
     async function handleSubmit(e) {
         e.preventDefault();
-        setError(null);
+
+        const result = loginSchema.safeParse({ email, password });
+
+        if (!result.success) {
+            result.error.issues.forEach(issue => {
+                toast.error(issue.message);
+            });
+            return;
+        }
             
         const { data, error } = await authClient.signIn.email({
             email,
@@ -23,12 +33,12 @@ export default function LoginPage() {
         }, {
             onRequest: (ctx) => {},
             onSuccess: async (ctx) => {
-                console.log('Login successful:', ctx);
+                toast('Login realizado com sucesso!');
                 await refreshUser();
                 router.back();
             },
             onError: (ctx) => {
-                setError(ctx.error.message || 'Erro ao registrar');
+                toast.error(ctx.error.message || 'Erro ao realizar o login.');
             },
         });
     }
@@ -39,7 +49,6 @@ export default function LoginPage() {
             <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100">
                 <div className="w-full max-w-md p-8 space-y-6 bg-white rounded shadow">
                     <h2 className="text-2xl font-bold text-center">Login</h2>
-                    {error && <div className="p-4 text-red-700 bg-red-100 border border-red-400 rounded">{error}</div>}
                     <form onSubmit={handleSubmit} className="space-y-6">
                         <div>
                             <label htmlFor="email" className="block mb-2 text-sm font-medium text-gray-700">Email</label>
@@ -48,23 +57,18 @@ export default function LoginPage() {
                                 id="email"
                                 value={email}
                                 onChange={(e) => setEmail(e.target.value)}
-                                required
                                 className="w-full px-3 py-2 border rounded focus:outline-none focus:ring focus:border-blue-300"
                             />
                         </div>
                         <div>
                             <label htmlFor="password" className="block mb-2 text-sm font-medium text-gray-700">Senha</label>
-                            <input
-                                type="password"
-                                id="password"
+                            <PasswordInput
                                 value={password}
                                 onChange={(e) => setPassword(e.target.value)}
-                                required
-                                className="w-full px-3 py-2 border rounded focus:outline-none focus:ring focus:border-blue-300"
                             />
                         </div>
-                        <div className="text-sm text-center">
-                            <a href="/register" className="text-blue-600 hover:underline">Não tem uma conta? Registre-se</a>
+                        <div className='flex items-center justify-center'>
+                            <p className="text-sm text-gray-600">Não tem uma conta? <a href="/register" className="text-[var(--secondary)] hover:underline">Registrar</a></p>
                         </div>
                         <button
                             type="submit"
