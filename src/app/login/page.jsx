@@ -15,6 +15,13 @@ export default function LoginPage() {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
 
+    async function handleForgotPassword() {
+        await authClient.requestPasswordReset({
+            email,
+            redirectTo: `${window.location.origin}/reset-password`
+        })
+    }
+
     async function handleSubmit(e) {
         e.preventDefault();
 
@@ -66,6 +73,7 @@ export default function LoginPage() {
                                 value={password}
                                 onChange={(e) => setPassword(e.target.value)}
                             />
+                            <p className="text-sm text-[var(--secondary)] hover:underline cursor-pointer" onClick={handleForgotPassword}>Esqueci a senha</p>
                         </div>
                         <div className='flex items-center justify-center'>
                             <p className="text-sm text-gray-600">Não tem uma conta? <a href="/register" className="text-[var(--secondary)] hover:underline">Registrar</a></p>

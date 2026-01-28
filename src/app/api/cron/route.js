@@ -3,6 +3,9 @@ import { db } from "@/db/index.js";
 import { productAlert } from "@/db/schema/domain-schema.js";
 import { historyPrice } from "@/db/schema/domain-schema.js";
 import { eq } from "drizzle-orm";
+import { Resend } from "resend";
+
+const resend = new Resend(process.env.API_RESEND_KEY);
 
 async function buscarProduto(alert) {
 
@@ -24,8 +27,17 @@ async function buscarProduto(alert) {
         const alertPrice = Number(alert.currentPrice);
         const targetPrice = Number(alert.targetPrice);
 
-        if (currentPrice <= targetPrice) {
-            console.log(`Alerta disparado para o produto ${alert.productName} - Preço atual: ${currentPrice}, Preço alvo: ${targetPrice}`);
+        if (currentPrice <= targetPrice && !alert.triggeredAt) {
+            try {
+                await resend.emails.send({
+                    from: 'onboarding@resend.dev',
+                    to: alert.email,
+                    subject: `Alerta de preço para ${alert.productName}`,
+                    text: `O preço do produto ${alert.productName} caiu para ${currentPrice}.`
+                });
+            } catch (error) {
+                console.error("Erro ao enviar o e-mail:", error);
+            }
         }
         
         if (currentPrice === alertPrice) {
