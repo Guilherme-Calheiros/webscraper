@@ -23,8 +23,7 @@ export default function ResetPasswordPage() {
   }
 
   if (!token) {
-    toast("Token inválido ou expirado");
-    return;
+    return null;
   }
 
   return (
