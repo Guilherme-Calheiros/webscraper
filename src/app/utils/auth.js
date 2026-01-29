@@ -27,7 +27,7 @@ export const auth = betterAuth({
     emailVerification: {
         sendVerificationEmail: async ({ user, url}) => {
             await resend.emails.send({
-                from: 'onboarding@resend.dev',
+                from: `MeliTrack <${process.env.EMAIL_FROM}>`,
                 to: user.email,
                 subject: 'Verifique seu endereço de e-mail',
                 react: <VerificarEmail user={user} url={url} />
@@ -43,7 +43,7 @@ export const auth = betterAuth({
         sendResetPassword: async ({ user, url }) => {
             console.log("Sending password reset email to:", user.email, "with URL:", url);
             await resend.emails.send({
-                from: 'onboarding@resend.dev',
+                from: `MeliTrack <${process.env.EMAIL_FROM}>`,
                 to: user.email,
                 subject: 'Redefina sua senha',
                 react: <RedefinirSenha user={user} url={url} />
