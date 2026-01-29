@@ -6,7 +6,7 @@ import { Resend } from "resend";
 import VerificarEmail from "../components/VerificarEmail";
 import RedefinirSenha from "../components/RedefinirSenha";
 
-const resend = new Resend(process.env.API_RESEND_KEY);
+const resend = new Resend(process.env.RESEND_API_KEY);
 
 export const auth = betterAuth({
     database: drizzleAdapter(db, {
@@ -41,6 +41,7 @@ export const auth = betterAuth({
         enabled: true,
         requireEmailVerification: true,
         sendResetPassword: async ({ user, url }) => {
+            console.log("Sending password reset email to:", user.email, "with URL:", url);
             await resend.emails.send({
                 from: 'onboarding@resend.dev',
                 to: user.email,
@@ -50,6 +51,6 @@ export const auth = betterAuth({
         },
     },
 
-    trustedOrigins: process.env.TRUSTED_ORIGINS,
+    trustedOrigins: process.env.BETTER_TRUSTED_ORIGINS,
     
 });
