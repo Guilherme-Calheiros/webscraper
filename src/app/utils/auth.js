@@ -6,7 +6,7 @@ import { Resend } from "resend";
 import VerificarEmail from "../components/VerificarEmail";
 import RedefinirSenha from "../components/RedefinirSenha";
 
-const resend = new Resend(process.env.RESEND_API_KEY);
+const resend = new Resend(`${process.env.RESEND_API_KEY}`);
 
 export const auth = betterAuth({
     database: drizzleAdapter(db, {
