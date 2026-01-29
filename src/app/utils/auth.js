@@ -44,12 +44,19 @@ export const auth = betterAuth({
         requireEmailVerification: true,
         sendResetPassword: async ({ user, url }) => {
             console.log("Sending password reset email to:", user.email, "with URL:", url);
-            await resend.emails.send({
-                from: `MeliTrack <${process.env.EMAIL_FROM}>`,
-                to: user.email,
-                subject: 'Redefina sua senha',
-                react: <RedefinirSenha user={user} url={url} />
-            })
+            console.log("RESEND_API_KEY exists?", !!process.env.RESEND_API_KEY);
+            try {
+                const result = await resend.emails.send({
+                    from: `MeliTrack <${process.env.EMAIL_FROM}>`,
+                    to: user.email,
+                    subject: 'Redefina sua senha',
+                    text: `Clique no link para redefinir sua senha: ${url}`
+                });
+
+                console.log("Resend result:", result);
+            } catch (error) {
+                console.error("Resend error:", error);
+            }
         },
     },
     
