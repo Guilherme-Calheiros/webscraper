@@ -3,6 +3,8 @@ import { drizzleAdapter } from "better-auth/adapters/drizzle";
 import { db } from "../../db";
 import * as schema from "../../db/schema";
 import { Resend } from "resend";
+import VerificarEmail from "../components/VerificarEmail";
+import RedefinirSenha from "../components/RedefinirSenha";
 
 const resend = new Resend(process.env.API_RESEND_KEY);
 
@@ -28,7 +30,7 @@ export const auth = betterAuth({
                 from: 'onboarding@resend.dev',
                 to: user.email,
                 subject: 'Verifique seu endereço de e-mail',
-                text: `Clique no link para verificar seu e-mail: ${url}`
+                react: <VerificarEmail user={user} url={url} />
             })
         },
 
@@ -43,7 +45,7 @@ export const auth = betterAuth({
                 from: 'onboarding@resend.dev',
                 to: user.email,
                 subject: 'Redefina sua senha',
-                text: `Clique no link para redefinir sua senha: ${url}`
+                react: <RedefinirSenha user={user} url={url} />
             })
         },
     },
