@@ -1,5 +1,7 @@
 "use client";
 
+export const dynamic = "force-dynamic";
+
 import { useRouter, useSearchParams } from "next/navigation";
 import { useState } from "react";
 import { authClient } from "../utils/auth-client";
@@ -18,6 +20,11 @@ export default function ResetPasswordPage() {
 
     toast("Senha alterada com sucesso!");
     router.push('/login');
+  }
+
+  if (!token) {
+    toast("Token inválido ou expirado");
+    return;
   }
 
   return (
