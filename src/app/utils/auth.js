@@ -9,6 +9,8 @@ import RedefinirSenha from "../components/RedefinirSenha";
 const resend = new Resend(`${process.env.RESEND_API_KEY}`);
 
 export const auth = betterAuth({
+    baseURL: process.env.BETTER_AUTH_URL,
+
     database: drizzleAdapter(db, {
         provider: "pg",
         schema
