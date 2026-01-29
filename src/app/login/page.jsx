@@ -20,6 +20,8 @@ export default function LoginPage() {
             email,
             redirectTo: `${window.location.origin}/reset-password`
         })
+
+        toast('Se um usuário com esse email existir, um email de redefinição de senha foi enviado.');
     }
 
     async function handleSubmit(e) {
