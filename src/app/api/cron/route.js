@@ -4,6 +4,7 @@ import { productAlert } from "@/db/schema/domain-schema.js";
 import { historyPrice } from "@/db/schema/domain-schema.js";
 import { eq } from "drizzle-orm";
 import { Resend } from "resend";
+import EmailAlerta from "@/app/components/EmailAlerta";
 
 const resend = new Resend(process.env.API_RESEND_KEY);
 
@@ -30,10 +31,15 @@ async function buscarProduto(alert) {
         if (currentPrice <= targetPrice && !alert.triggeredAt) {
             try {
                 await resend.emails.send({
-                    from: 'onboarding@resend.dev',
+                    from: `MeliTrack <${process.env.EMAIL_FROM}>`,
                     to: alert.email,
                     subject: `Alerta de preço para ${alert.productName}`,
-                    text: `O preço do produto ${alert.productName} caiu para ${currentPrice}.`
+                    react: <EmailAlerta  
+                        currentPrice={currentPrice}
+                        targetPrice={targetPrice}
+                        productName={alert.productName}
+                        productUrl={alert.productUrl}
+                    />
                 });
             } catch (error) {
                 console.error("Erro ao enviar o e-mail:", error);
@@ -64,17 +70,29 @@ async function buscarProduto(alert) {
     }
 }
 
-export async function GET(){
+export async function GET(request){
+    const authHeader = request.headers.get("authorization");
+    if (authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
+        return NextResponse.json(
+            { error: "Sem autorização" },
+            { status: 401 }
+        );
+    }
+
     try {
 
         const list = await db.select().from(productAlert);
 
-        for (const alert of list) {
-            await buscarProduto(alert);
+        const BATCH_SIZE = 10;
+        for (let i = 0; i < list.length; i += BATCH_SIZE) {
+            const batch = list.slice(i, i + BATCH_SIZE);
+            await Promise.allSettled(
+                batch.map(alert => buscarProduto(alert))
+            );
         }
 
         return NextResponse.json(
-            { success: true },
+            { success: list },
             { status: 200 }
         );
 

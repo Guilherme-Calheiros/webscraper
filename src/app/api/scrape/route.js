@@ -3,7 +3,21 @@ export const runtime = "nodejs";
 import * as cheerio from "cheerio";
 import { NextResponse } from "next/server";
 
+const RATE_LIMIT_MS = 2000;
+let lastRequestTime = 0;
+
 const fetchWithHeaders = async (url) => {
+    const now = Date.now();
+    const timeSinceLastRequest = now - lastRequestTime;
+
+    if (timeSinceLastRequest < RATE_LIMIT_MS) {
+        await new Promise(resolve => 
+            setTimeout(resolve, RATE_LIMIT_MS - timeSinceLastRequest)
+        );
+    }
+
+    lastRequestTime = Date.now();
+    
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), 15000);
 
@@ -30,7 +44,11 @@ const fetchWithHeaders = async (url) => {
 
         return await response.text();
     } catch (error) {
-        clearTimeout(timeoutId);
+        if (error.name === 'AbortError') {
+            throw new Error('Request timeout');
+        }
+        
+        console.error('Fetch error:', { url, error: error.message });
         throw error;
     }
 };
