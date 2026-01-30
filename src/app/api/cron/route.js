@@ -32,7 +32,7 @@ async function buscarProduto(alert) {
             try {
                 await resend.emails.send({
                     from: `MeliTrack <${process.env.EMAIL_FROM}>`,
-                    to: alert.email,
+                    to: alert.userEmail,
                     subject: `Alerta de preço para ${alert.productName}`,
                     react: <EmailAlerta  
                         currentPrice={currentPrice}

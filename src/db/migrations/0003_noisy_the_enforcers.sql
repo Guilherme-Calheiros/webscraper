@@ -1,0 +1,1 @@
+ALTER TABLE "product_alerts" ADD COLUMN "user_email" text;

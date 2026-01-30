@@ -14,6 +14,8 @@ export const productAlert = pgTable("product_alerts", {
   userId: text("user_id")
     .notNull()
     .references(() => user.id, { onDelete: "cascade" }),
+
+  userEmail: text("user_email").notNull(),
   
   isActive: integer("is_active").notNull().default(1),
   triggeredAt: timestamp("triggered_at"),

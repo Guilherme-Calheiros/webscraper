@@ -22,6 +22,7 @@ export async function POST(request) {
         const body = await request.json();
 
         const userId = session.user.id;
+        const userEmail = session.user.email;
 
         const {
             productId,
@@ -31,7 +32,7 @@ export async function POST(request) {
             targetPrice,
         } = body
 
-        if (productId == null || productName == null || productUrl == null || currentPrice == null || targetPrice == null || userId == null) {
+        if (productId == null || productName == null || productUrl == null || currentPrice == null || targetPrice == null || userId == null || userEmail == null) {
             return NextResponse.json(
                 { error: "Faltando campos obrigatórios" },
                 { status: 400 }
@@ -47,7 +48,8 @@ export async function POST(request) {
                 currentPrice,
                 targetPrice,
                 userId,
-            })
+                userEmail,
+            });
 
         return NextResponse.json(
             { success: true},

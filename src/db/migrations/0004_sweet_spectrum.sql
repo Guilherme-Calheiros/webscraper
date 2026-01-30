@@ -1,0 +1,1 @@
+ALTER TABLE "product_alerts" ALTER COLUMN "user_email" SET NOT NULL;

@@ -22,6 +22,20 @@
       "when": 1769033731863,
       "tag": "0002_lovely_robbie_robertson",
       "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1769803934241,
+      "tag": "0003_noisy_the_enforcers",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1769804053494,
+      "tag": "0004_sweet_spectrum",
+      "breakpoints": true
     }
   ]
 }
