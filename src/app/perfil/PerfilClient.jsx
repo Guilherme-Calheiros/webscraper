@@ -122,9 +122,6 @@ export default function PerfilClient({ user }) {
   return (
     <>
       <Header />
-      <button onClick={() => toast('ola')}>
-        marreta
-      </button>
       <div className="min-h-screen bg-gray-50 py-8">
         <div className="max-w-3xl mx-auto px-4">
           <div className="mb-8">

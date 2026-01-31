@@ -187,7 +187,7 @@ export default function AlertCard({ alerta }) {
                                 Preço atual: {formatarMoeda(alerta.currentPrice)}
                             </p>
                         </div>
-                        <DialogFooter className="gap-2 sm:gap-0">
+                        <DialogFooter className="gap-2">
                             <DialogClose asChild>
                                 <Button variant="outline">Cancelar</Button>
                             </DialogClose>
@@ -218,7 +218,7 @@ export default function AlertCard({ alerta }) {
                             <br /><br />
                             Esta ação não pode ser desfeita e você perderá todo o histórico de preços deste produto.
                         </DialogDescription>
-                        <DialogFooter className="gap-2 sm:gap-0">
+                        <DialogFooter className="gap-2">
                             <DialogClose asChild>
                                 <Button variant="outline">Cancelar</Button>
                             </DialogClose>
