@@ -136,7 +136,7 @@ const productNameStyle = {
 const priceSection = {
     display: 'flex',
     justifyContent: 'space-around',
-    margin: '24px 0',
+    margin: '24px auto',
     gap: '16px',
 };
 

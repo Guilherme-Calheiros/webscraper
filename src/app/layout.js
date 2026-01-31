@@ -20,12 +20,12 @@ export const metadata = {
 
 export default function RootLayout({ children }) {
   return (
-    <html lang="pt-br" className="h-full">
+    <html lang="pt-br" className="h-screen w-screen">
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+        className={`${geistSans.variable} ${geistMono.variable} antialiased w-screen h-screen`}
       >
         <AuthProvider>
-          <Toaster />
+          <Toaster position="top-center"/>
           {children}
         </AuthProvider>
       </body>

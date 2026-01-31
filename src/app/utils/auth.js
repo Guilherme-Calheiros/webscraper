@@ -5,6 +5,7 @@ import * as schema from "../../db/schema";
 import { Resend } from "resend";
 import VerificarEmail from "../components/VerificarEmail";
 import RedefinirSenha from "../components/RedefinirSenha";
+import VerificarEmailDelete from "../components/VerificarEmailDelete";
 
 const resend = new Resend(`${process.env.RESEND_API_KEY}`);
 
@@ -22,7 +23,15 @@ export const auth = betterAuth({
             updateEmailWithoutVerification: true
         },
         deleteUser: { 
-            enabled: true
+            enabled: true,
+            sendDeleteAccountVerification: async ({ user, url }) => {
+                await resend.emails.send({
+                    from: `MeliTrack <${process.env.EMAIL_FROM}>`,
+                    to: user.email,
+                    subject: 'Confirme a exclusão da sua conta',
+                    react: <VerificarEmailDelete user={user} url={url} />
+                })
+            }
         }
     },
 

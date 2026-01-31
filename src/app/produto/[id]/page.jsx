@@ -118,10 +118,45 @@ export default function Produto() {
                                     />
                                 ))}
                                 {produto.images.length > 1 && (
-                                <>
-                                    <button className="prev absolute top-1/2 left-1 transform -translate-y-1/2 bg-black bg-opacity-60 text-white border-none cursor-pointer p-1.5" onClick={() => setIndex((index - 1 + produto.images.length) % produto.images.length)}>‹</button>
-                                    <button className="next absolute top-1/2 right-1 transform -translate-y-1/2 bg-black bg-opacity-60 text-white border-none cursor-pointer p-1.5" onClick={() => setIndex((index + 1) % produto.images.length)}>›</button>
-                                </>
+                                    <>
+                                        <button
+                                            className="prev absolute top-1/2 left-2 transform -translate-y-1/2 bg-black/70 hover:bg-black text-white border-none cursor-pointer p-2 rounded-full transition-all group-hover:opacity-100"
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                setIndex((index - 1 + produto.images.length) % produto.images.length);
+                                            }}
+                                            aria-label="Imagem anterior"
+                                        >
+                                            ‹
+                                        </button>
+                                        <button
+                                            className="next absolute top-1/2 right-2 transform -translate-y-1/2 bg-black/70 hover:bg-black text-white border-none cursor-pointer p-2 rounded-full transition-all group-hover:opacity-100"
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                setIndex((index + 1) % produto.images.length);
+                                            }}
+                                            aria-label="Próxima imagem"
+                                        >
+                                            ›
+                                        </button>
+
+                                        <div className="absolute bottom-2 left-1/2 transform -translate-x-1/2 flex gap-1.5">
+                                            {produto.images.map((_, i) => (
+                                                <button
+                                                    key={i}
+                                                    onClick={(e) => {
+                                                        e.stopPropagation();
+                                                        setIndex(i);
+                                                    }}
+                                                    className={`w-2 h-2 rounded-full transition-all ${i === index
+                                                            ? 'bg-primary w-4'
+                                                            : 'bg-gray-300 hover:bg-gray-400'
+                                                        }`}
+                                                    aria-label={`Ir para imagem ${i + 1}`}
+                                                />
+                                            ))}
+                                        </div>
+                                    </>
                                 )}
                             </div>
                             <div className="content p-4 flex flex-col gap-2">
