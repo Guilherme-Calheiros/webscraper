@@ -1,14 +1,21 @@
 'use client';
 
 import React, { useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { redirect, useRouter } from 'next/navigation';
 import { authClient } from '@/app/utils/auth-client';
 import { Header } from '../components/Header';
 import { toast } from 'sonner';
 import { registerSchema } from '@/schema/register.schema';
 import PasswordInput from '../components/PasswordInput';
+import { useAuth } from '../providers/AuthProvider';
 
 export default function LoginPage() {
+    const { user } = useAuth();
+
+    if (user) {
+        redirect('/');
+    }
+
     const router = useRouter();
     const [name, setName] = useState('');
     const [email, setEmail] = useState('');
