@@ -47,6 +47,11 @@ export default function LoginPage() {
                 router.back();
             },
             onError: (ctx) => {
+                if (ctx.error.status === 401) {
+                    toast.error('Email ou senha incorretos.');
+                    return;
+                }
+
                 toast.error(ctx.error.message || 'Erro ao realizar o login.');
             },
         });
