@@ -44,7 +44,7 @@ export function Header({ search = true }) {
   }, []);
 
   return (
-    <header className="w-full bg-secondary text-white shadow-md">
+    <header className="w-full bg-secondary text-white shadow-md border-b border-white/20">
       <div className="mx-auto px-4 py-3">
         <div className="flex items-center justify-between gap-4">
           <h1 
