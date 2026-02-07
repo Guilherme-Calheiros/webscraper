@@ -54,7 +54,7 @@ export default function EmailAlerta({
                         </Section>
 
                         <Section style={discountBadge}>
-                            <Text style={discountText}>-{percentageDifference}% OFF</Text>
+                            <Text style={discountText}>{percentageDifference}% OFF</Text>
                         </Section>
                     </Section>
 
