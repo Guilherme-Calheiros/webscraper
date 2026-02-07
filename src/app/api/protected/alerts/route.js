@@ -111,6 +111,47 @@ export async function PUT(request) {
     }
 }
 
+export async function PATCH(request) {
+    try {
+        const session = await auth.api.getSession({
+            headers: await headers()
+        })
+
+        if (!session?.user) {
+            return NextResponse.json(
+                { error: "Não autenticado" },
+                { status: 401 }
+            );
+        }
+
+        const body = await request.json();
+        const { id } = body;
+        if (id == null ) {
+            return NextResponse.json(
+                { error: "ID do alerta é obrigatório" },
+                { status: 400 }
+            );
+        }
+
+        await db
+            .update(productAlert)
+            .set({ isActive: 1, triggeredAt: null, emailSentAt: null})
+            .where(and(eq(productAlert.id, id), eq(productAlert.userId, session.user.id)));
+
+        return NextResponse.json(
+            { success: true },
+            { status: 200 }
+        );
+
+    } catch (err) {
+        console.error(err);
+        return NextResponse.json(
+            { error: "Erro ao processar a solicitação" },
+            { status: 500 }
+        );
+    }
+}
+
 export async function DELETE(request) {
     try {
         const session = await auth.api.getSession({

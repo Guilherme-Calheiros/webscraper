@@ -6,7 +6,7 @@ import { NumericFormat } from "react-number-format";
 import { useState } from "react";
 import { Button } from "./ui/button";
 import { useRouter } from "next/navigation";
-import { Edit2, Trash2, TrendingDown, TrendingUp, ExternalLink, Calendar } from "lucide-react";
+import { Edit2, Trash2, TrendingDown, TrendingUp, ExternalLink, Calendar, Bell, BellOff } from "lucide-react";
 import { formatarMoeda } from "../utils/preco";
 import { toast } from "sonner";
 
@@ -57,6 +57,30 @@ export default function AlertCard({ alerta }) {
         }
     }
 
+    async function reativarAlerta() {
+        const payload = {
+            id: alerta.id,
+        }
+
+        try {
+            const response = await fetch('/api/protected/alerts/', {
+                method: 'PATCH',
+                credentials: 'include',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+
+            if (response.ok) {
+                toast.success('Alerta reativado com sucesso!');
+                router.refresh();
+            } else {
+                toast.error('Erro ao reativar o alerta.');
+            }
+        } catch (err) {
+            toast.error('Erro ao reativar o alerta.');
+        }
+    }
+
     async function excluirAlerta() {
         if (isDeleting) return;
         setIsDeleting(true);
@@ -88,13 +112,24 @@ export default function AlertCard({ alerta }) {
     return (
         <div className="bg-white border border-gray-200 rounded-lg shadow-sm hover:shadow-md transition-all duration-200 flex flex-col">
             <div className="p-4 border-b border-gray-100 flex-shrink-0">
-                <div className="flex items-start justify-between gap-3">
+                <div className="flex items-start justify-between gap-3 relative">
                     <div className="flex-1 min-w-0">
+                        <div className="absolute right-0 top-0">
+                            {alerta.isActive ? (
+                                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs bg-green-100 text-green-800">
+                                    <Bell className="w-4 h-4" />
+                                </span>
+                            ) : (
+                                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs bg-red-100 text-red-800">
+                                    <BellOff className="w-4 h-4" />
+                                </span>
+                            )}
+                        </div>
                         <a 
                             href={alerta.productUrl} 
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="text-sm md:text-base font-semibold text-secondary hover:text-blue-600 hover:underline line-clamp-2 transition-colors group"
+                            className="text-sm md:text-base font-semibold text-secondary hover:text-blue-600 w-4/5 hover:underline line-clamp-2 transition-colors group"
                         >
                             {alerta.productName}
                             <ExternalLink className="inline-block w-3 h-3 ml-1 opacity-0 group-hover:opacity-100 transition-opacity" />
@@ -103,6 +138,12 @@ export default function AlertCard({ alerta }) {
                             <Calendar className="w-3 h-3" />
                             <span>Criado em {createdDate}</span>
                         </div>
+                        {alerta.triggeredAt && (
+                            <div className="flex items-center gap-1 mt-2 text-xs text-gray-500">                           
+                                <Calendar className="w-3 h-3" />
+                                <span>Alerta disparado em {new Date(alerta.triggeredAt).toLocaleDateString()}</span>
+                            </div>
+                        )}
                     </div>
                 </div>
             </div>
@@ -147,56 +188,68 @@ export default function AlertCard({ alerta }) {
                 </div>
             </div>
             <div className="p-3 bg-gray-50 border-t border-gray-100 rounded-b-lg flex gap-2">
-                <Dialog open={openEditDialog} onOpenChange={setOpenEditDialog}>
-                    <DialogTrigger asChild>
-                        <Button 
-                            variant="outline" 
-                            size="sm"
-                            className="flex-1 flex items-center justify-center gap-2 text-xs md:text-sm"
-                        >
-                            <Edit2 className="w-3 h-3 md:w-4 md:h-4" />
-                            <span className="hidden sm:inline">Editar</span>
-                        </Button>
-                    </DialogTrigger>
-                    <DialogContent className="sm:max-w-[425px]">
-                        <DialogHeader>
-                            <DialogTitle>Editar Alerta</DialogTitle>
-                            <DialogDescription className="text-foreground pt-2">
-                                Atualize o preço alvo para <strong className="text-secondary">{alerta.productName}</strong>
-                            </DialogDescription>
-                        </DialogHeader>
-                        <div className="py-4">
-                            <label htmlFor="priceGoal" className="text-sm font-medium text-gray-700 mb-2 block">
-                                Preço Alvo
-                            </label>
-                            <NumericFormat
-                                value={targetPrice}
-                                onValueChange={(values) => setTargetPrice(values.floatValue)}
-                                className='w-full border border-gray-300 rounded-md px-3 py-2.5 mb-2 focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-colors'
-                                placeholder='Preço alvo em R$'
-                                allowLeadingZeros={false}
-                                allowNegative={false}
-                                decimalScale={2}
-                                fixedDecimalScale={true}
-                                decimalSeparator=','
-                                allowedDecimalSeparators={['.']}
-                                prefix='R$ '
-                                thousandSeparator='.'
-                            />
-                            <p className="text-xs text-gray-500">
-                                Preço atual: {formatarMoeda(alerta.currentPrice)}
-                            </p>
-                        </div>
-                        <DialogFooter className="gap-2">
-                            <DialogClose asChild>
-                                <Button variant="outline">Cancelar</Button>
-                            </DialogClose>
-                            <Button onClick={editarAlerta} disabled={isEditing}>
-                                {isEditing ? 'Salvando...' : 'Salvar alteração'}
+                {alerta.isActive ? (
+                    <Dialog open={openEditDialog} onOpenChange={setOpenEditDialog}>
+                        <DialogTrigger asChild>
+                            <Button 
+                                variant="outline" 
+                                size="sm"
+                                className="flex-1 flex items-center justify-center gap-2 text-xs md:text-sm"
+                            >
+                                <Edit2 className="w-3 h-3 md:w-4 md:h-4" />
+                                <span className="hidden sm:inline">Editar</span>
                             </Button>
-                        </DialogFooter>
-                    </DialogContent>
-                </Dialog>
+                        </DialogTrigger>
+                        <DialogContent className="sm:max-w-[425px]">
+                            <DialogHeader>
+                                <DialogTitle>Editar Alerta</DialogTitle>
+                                <DialogDescription className="text-foreground pt-2">
+                                    Atualize o preço alvo para <strong className="text-secondary">{alerta.productName}</strong>
+                                </DialogDescription>
+                            </DialogHeader>
+                            <div className="py-4">
+                                <label htmlFor="priceGoal" className="text-sm font-medium text-gray-700 mb-2 block">
+                                    Preço Alvo
+                                </label>
+                                <NumericFormat
+                                    value={targetPrice}
+                                    onValueChange={(values) => setTargetPrice(values.floatValue)}
+                                    className='w-full border border-gray-300 rounded-md px-3 py-2.5 mb-2 focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-colors'
+                                    placeholder='Preço alvo em R$'
+                                    allowLeadingZeros={false}
+                                    allowNegative={false}
+                                    decimalScale={2}
+                                    fixedDecimalScale={true}
+                                    decimalSeparator=','
+                                    allowedDecimalSeparators={['.']}
+                                    prefix='R$ '
+                                    thousandSeparator='.'
+                                />
+                                <p className="text-xs text-gray-500">
+                                    Preço atual: {formatarMoeda(alerta.currentPrice)}
+                                </p>
+                            </div>
+                            <DialogFooter className="gap-2">
+                                <DialogClose asChild>
+                                    <Button variant="outline">Cancelar</Button>
+                                </DialogClose>
+                                <Button onClick={editarAlerta} disabled={isEditing}>
+                                    {isEditing ? 'Salvando...' : 'Salvar alteração'}
+                                </Button>
+                            </DialogFooter>
+                        </DialogContent>
+                    </Dialog>
+                ) : (
+                    <Button 
+                        variant="outline" 
+                        size="sm"
+                        className="flex-1 flex items-center justify-center gap-2 text-green-600 hover:text-green-700 hover:bg-green-50 text-xs md:text-sm"
+                        onClick={reativarAlerta}
+                    >
+                        <Bell className="w-3 h-3 md:w-4 md:h-4" />
+                        <span className="hidden sm:inline">Reativar</span>
+                    </Button>
+                )}
 
                 <Dialog open={openDeleteDialog} onOpenChange={setOpenDeleteDialog}>
                     <DialogTrigger asChild>

@@ -64,6 +64,12 @@ export default function EmailAlerta({
                         </Button>
                     </Section>
 
+                    <Section style={infoSection}>
+                        <Text style={text}>
+                            Este alerta foi desativado automaticamente para evitar notificações repetidas. Se quiser acompanhar novamente, basta reativar o alerta no site.
+                        </Text>
+                    </Section>
+
                     <Hr style={hr} />
 
                     <Text style={footer}>
@@ -134,8 +140,6 @@ const productNameStyle = {
 };
 
 const priceSection = {
-    display: 'flex',
-    justifyContent: 'space-around',
     margin: '24px auto',
     gap: '16px',
 };
@@ -221,4 +225,10 @@ const footer = {
     fontSize: '12px',
     lineHeight: '18px',
     padding: '0 40px',
+};
+
+const infoSection = {
+    color: '#6b7280',
+    fontSize: '14px',
+    margin: '24px auto',
 };

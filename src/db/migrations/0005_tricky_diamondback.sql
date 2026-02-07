@@ -1,0 +1,1 @@
+ALTER TABLE "product_alerts" ADD COLUMN "email_sent_at" timestamp;

@@ -19,6 +19,7 @@ export const productAlert = pgTable("product_alerts", {
   
   isActive: integer("is_active").notNull().default(1),
   triggeredAt: timestamp("triggered_at"),
+  emailSentAt: timestamp("email_sent_at"),
 
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });

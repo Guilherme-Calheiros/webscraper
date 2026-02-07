@@ -6,7 +6,7 @@ import { eq } from "drizzle-orm";
 import { Resend } from "resend";
 import EmailAlerta from "@/app/components/EmailAlerta";
 
-const resend = new Resend(process.env.API_RESEND_KEY);
+const resend = new Resend(process.env.RESEND_API_KEY);
 
 async function buscarProduto(alert) {
 
@@ -41,6 +41,16 @@ async function buscarProduto(alert) {
                         productUrl={alert.productUrl}
                     />
                 });
+
+                await db
+                    .update(productAlert)
+                    .set({
+                        triggeredAt: new Date(),
+                        emailSentAt: new Date(),
+                        isActive: 0
+                    })
+                    .where(eq(productAlert.id, alert.id));
+
             } catch (error) {
                 console.error("Erro ao enviar o e-mail:", error);
             }
@@ -81,7 +91,10 @@ export async function GET(request){
 
     try {
 
-        const list = await db.select().from(productAlert);
+        const list = await db
+            .select()
+            .from(productAlert)
+            .where(eq(productAlert.isActive, 1));
 
         const BATCH_SIZE = 10;
         for (let i = 0; i < list.length; i += BATCH_SIZE) {

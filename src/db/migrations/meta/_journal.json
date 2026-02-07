@@ -36,6 +36,13 @@
       "when": 1769804053494,
       "tag": "0004_sweet_spectrum",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1770474661169,
+      "tag": "0005_tricky_diamondback",
+      "breakpoints": true
     }
   ]
 }
